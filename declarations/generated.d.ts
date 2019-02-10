@@ -5,9 +5,9 @@
   */
 export class FixedSizeLinkedList extends LinkedList {
     size: number;
-    maintainHigh: boolean;
-    maintainLow: boolean;
-    maintainSum: boolean;
+    maintainHigh?: boolean;
+    maintainLow?: boolean;
+    maintainSum?: boolean;
     totalPushed: number;
     periodHigh: number;
     periodLow: number;
@@ -712,6 +712,89 @@ export class ThreeWhiteSoldiers extends CandlestickFinder {
 }
 export function threewhitesoldiers(data: StockData): any;
 
+export class BullishHammerStick extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function bullishhammerstick(data: StockData): any;
+
+export class BearishHammerStick extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function bearishhammerstick(data: StockData): any;
+
+export class BullishInvertedHammerStick extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function bullishinvertedhammerstick(data: StockData): any;
+
+export class BearishInvertedHammerStick extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function bearishinvertedhammerstick(data: StockData): any;
+
+export class HammerPattern extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+    downwardTrend(data: StockData, confirm?: boolean): boolean;
+    includesHammer(data: StockData, confirm?: boolean): any;
+    hasConfirmation(data: StockData): boolean;
+}
+export function hammerpattern(data: StockData): any;
+
+export class HammerPatternUnconfirmed extends HammerPattern {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function hammerpatternunconfirmed(data: StockData): any;
+
+export class HangingMan extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+    upwardTrend(data: StockData, confirm?: boolean): boolean;
+    includesHammer(data: StockData, confirm?: boolean): any;
+    hasConfirmation(data: StockData): boolean;
+}
+export function hangingman(data: StockData): any;
+
+export class HangingManUnconfirmed extends HangingMan {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function hangingmanunconfirmed(data: StockData): any;
+
+export class ShootingStar extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+    upwardTrend(data: StockData, confirm?: boolean): boolean;
+    includesHammer(data: StockData, confirm?: boolean): any;
+    hasConfirmation(data: StockData): boolean;
+}
+export function shootingstar(data: StockData): any;
+
+export class ShootingStarUnconfirmed extends ShootingStar {
+    constructor();
+    logic(data: StockData): boolean;
+}
+export function shootingstarunconfirmed(data: StockData): any;
+
+export class TweezerTop extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+    upwardTrend(data: StockData): boolean;
+}
+export function tweezertop(data: StockData): any;
+
+export class TweezerBottom extends CandlestickFinder {
+    constructor();
+    logic(data: StockData): boolean;
+    downwardTrend(data: StockData): boolean;
+}
+export function tweezerbottom(data: StockData): any;
+
 /**
   * Calcaultes the fibonacci retracements for given start and end points
   *
@@ -731,12 +814,12 @@ export class PatternDetectorInput extends IndicatorInput {
     constructor(values: number[]);
 }
 export enum AvailablePatterns {
-    'TD' = 0,
-    'IHS' = 1,
-    'HS' = 2,
-    'TU' = 3,
-    'DT' = 4,
-    'DB' = 5,
+    'IHS' = 0,
+    'TU' = 1,
+    'DB' = 2,
+    'HS' = 3,
+    'TD' = 4,
+    'DT' = 5
 }
 export class PatternDetectorOutput {
     patternId: AvailablePatterns;
@@ -759,6 +842,71 @@ export class PatternDetector extends Indicator {
     static isTrendingUp: typeof isTrendingUp;
     static isTrendingDown: typeof isTrendingDown;
 }
+
+export class IchimokuCloudInput extends IndicatorInput {
+    high: number[];
+    low: number[];
+    conversionPeriod: number;
+    basePeriod: number;
+    spanPeriod: number;
+    displacement: number;
+}
+export class IchimokuCloudOutput {
+    conversion: number;
+    base: number;
+    spanA: number;
+    spanB: number;
+}
+export class IchimokuCloud extends Indicator {
+    result: IchimokuCloudOutput[];
+    generator: IterableIterator<IchimokuCloudOutput | undefined>;
+    constructor(input: IchimokuCloudInput);
+    static calculate: typeof ichimokucloud;
+    nextValue(price: CandleData): IchimokuCloudOutput;
+}
+export function ichimokucloud(input: IchimokuCloudInput): IchimokuCloudOutput[];
+
+export class KeltnerChannelsInput extends IndicatorInput {
+    maPeriod: number;
+    atrPeriod: number;
+    useSMA: boolean;
+    multiplier: number;
+    high: number[];
+    low: number[];
+    close: number[];
+}
+export class KeltnerChannelsOutput extends IndicatorInput {
+    middle: number;
+    upper: number;
+    lower: number;
+}
+export class KeltnerChannels extends Indicator {
+    result: KeltnerChannelsOutput[];
+    generator: IterableIterator<KeltnerChannelsOutput | undefined>;
+    constructor(input: KeltnerChannelsInput);
+    static calculate: typeof keltnerchannels;
+    nextValue(price: KeltnerChannelsInput): KeltnerChannelsOutput | undefined;
+}
+export function keltnerchannels(input: KeltnerChannelsInput): KeltnerChannelsOutput[];
+
+export class ChandelierExitInput extends IndicatorInput {
+    period: number;
+    multiplier: number;
+    high: number[];
+    low: number[];
+    close: number[];
+}
+export class ChandelierExitOutput extends IndicatorInput {
+    exitLong: number;
+    exitShort: number;
+}
+export class ChandelierExit extends Indicator {
+    generator: IterableIterator<ChandelierExitOutput | undefined>;
+    constructor(input: ChandelierExitInput);
+    static calculate: typeof chandelierexit;
+    nextValue(price: ChandelierExitInput): ChandelierExitOutput | undefined;
+}
+export function chandelierexit(input: ChandelierExitInput): number[];
 
 export function setConfig(key: any, value: any): void;
 export function getConfig(key: any): any;

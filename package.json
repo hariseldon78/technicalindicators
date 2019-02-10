@@ -1,6 +1,6 @@
 {
   "name": "technicalindicators",
-  "version": "1.1.12",
+  "version": "2.0.7",
   "description": "Techincal Indicators written in javascript",
   "main": "dist/index.js",
   "module": "lib/index.js",
@@ -8,10 +8,10 @@
   "jsnext:main": "lib/index.js",
   "scripts": {
     "cover": "babel-istanbul --include-all-sources cover -x dist/**/*.* ./node_modules/mocha/bin/_mocha -- -R spec && open coverage/lcov-report/index.html",
-    "test": "mocha --compilers js:babel-register --require keras-js",
-    "test:watch": "mocha --watch --compilers js:babel-register --require keras-js",
-    "generateDts": "dts-bundle --name indicators --main declarations/index.d.ts --out generated.d.ts --baseDir declarations --outputAsModuleFolder",
-    "build-lib": "babel-node --presets es2015 rollup.js",
+    "test": "mocha --compilers js:babel-register --require babel-polyfill",
+    "test:watch": "mocha --watch --compilers js:babel-register --require babel-polyfill",
+    "generateDts": "./generateTsDefinitions.sh",
+    "build": "tsc -p . && babel-node --presets es2015 rollup.js",
     "start": "sh test.sh"
   },
   "repository": {
@@ -34,6 +34,8 @@
     "ema",
     "exponential moving average",
     "Awesome Oscillator",
+    "Keltner Channels",
+    "Ichimoku Cloud",
     "AO",
     "sma",
     "simple moving average",
@@ -81,7 +83,21 @@
     "Lowest",
     "Standard Deviation",
     "Average Gain",
-    "Average Loss"
+    "Average Loss",
+    "Bullish Hammer",
+    "Bearish Hammer",
+    "Bullish Inverted Hammer",
+    "Bearish Inverted Hammer",
+    "Hammer Pattern",
+    "Confirmed Hammer Pattern",
+    "Unconfirmed Hammer Pattern",
+    "Inverted Hammer Pattern",
+    "Confirmed Inverted Hammer Pattern",
+    "Unconfirmed Inverted Hammer Pattern",
+    "Hanging Man",
+    "Shooting Star",
+    "Tweezer Top",
+    "Tweezer Bottom"
   ],
   "author": "anand.anand84@gmail.com",
   "license": "MIT",
@@ -103,7 +119,7 @@
     "babel-register": "^6.8.0",
     "babel-runtime": "^6.23.0",
     "chai": "^3.0.0",
-    "draw-candlestick": "*",
+    "draw-candlestick": "2.0.3",
     "gulp": "^3.9.1",
     "gulp-mocha": "^2.2.0",
     "gulp-util": "^3.0.7",
@@ -122,15 +138,16 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.18.0",
     "rollup-plugin-uglify": "^1.0.2",
     "rollup-watch": "^3.2.2",
     "ts-node": "^1.0.0",
     "tslint": "^4.0.0",
-    "typescript": "^2.0.0"
+    "typescript": "^2.9.2"
   },
   "dependencies": {
-    "@types/node": "^6.0.96",
-    "babel-polyfill": "^6.23.0",
-    "keras-js": "^1.0.2"
+    "@tensorflow/tfjs": "^0.13.0",
+    "@tensorflow/tfjs-node": "^0.1.17",
+    "@types/node": "^6.0.96"
   }
 }

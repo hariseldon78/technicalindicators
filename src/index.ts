@@ -64,8 +64,20 @@ export  { bearishspinningtop }         from  './candlestick/BearishSpinningTop';
 export  { threeblackcrows }            from  './candlestick/ThreeBlackCrows';
 export  { threewhitesoldiers }         from  './candlestick/ThreeWhiteSoldiers';
 
-export  { fibonacciretracement}        from './drawingtools/fibonacci';
+export { bullishhammerstick }          from './candlestick/BullishHammerStick';
+export { bearishhammerstick }          from './candlestick/BearishHammerStick';
+export { bullishinvertedhammerstick }  from './candlestick/BullishInvertedHammerStick';
+export { bearishinvertedhammerstick }  from './candlestick/BearishInvertedHammerStick';
+export { hammerpattern }               from './candlestick/HammerPattern';
+export { hammerpatternunconfirmed }    from './candlestick/HammerPatternUnconfirmed';
+export { hangingman }                  from './candlestick/HangingMan';
+export { hangingmanunconfirmed }       from './candlestick/HangingManUnconfirmed';
+export { shootingstar }                from './candlestick/ShootingStar';
+export { shootingstarunconfirmed }     from './candlestick/ShootingStarUnconfirmed';
+export { tweezertop }                  from './candlestick/TweezerTop';
+export { tweezerbottom }               from './candlestick/TweezerBottom';
 
+export  { fibonacciretracement}        from './drawingtools/fibonacci';
 
 export  { predictPattern, PatternDetector }              from './patterndetection/patterndetection';
 export  { AvailablePatterns }              from './patterndetection/patterndetection';
@@ -75,5 +87,10 @@ export  { hasHeadAndShoulder}           from './patterndetection/patterndetectio
 export  { hasInverseHeadAndShoulder }   from './patterndetection/patterndetection';
 export  { isTrendingUp}                 from './patterndetection/patterndetection';
 export  { isTrendingDown }              from './patterndetection/patterndetection';
+
+export  { ichimokucloud, IchimokuCloud }              from './ichimoku/IchimokuCloud';
+
+export  { keltnerchannels, KeltnerChannels, KeltnerChannelsInput, KeltnerChannelsOutput }              from './volatility/KeltnerChannels';
+export  { chandelierexit, ChandelierExit, ChandelierExitInput, ChandelierExitOutput }              from './volatility/ChandelierExit';
 
 export  { setConfig, getConfig }       from './config'

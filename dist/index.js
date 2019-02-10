@@ -3,10 +3,6 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var KerasJS = _interopDefault(require('keras-js'));
-
 class Item {
     constructor(data, prev, next) {
         this.next = next;
@@ -534,7 +530,7 @@ class MACD extends Indicator {
                     index++;
                     continue;
                 }
-                if (fast && slow) {
+                if (fast && slow) { //Just for typescript to be happy
                     MACD = fast - slow;
                     signal = signalMAProducer.nextValue(MACD);
                 }
@@ -3050,8 +3046,199 @@ function threewhitesoldiers(data) {
     return new ThreeWhiteSoldiers().hasPattern(data);
 }
 
-let bullishPatterns = [new BullishEngulfingPattern(), new DownsideTasukiGap(), new BullishHarami(), new BullishHaramiCross(),
-    new MorningDojiStar(), new MorningStar(), new BullishMarubozu(), new PiercingLine(), new ThreeWhiteSoldiers()];
+class BullishHammerStick extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'BullishHammerStick';
+        this.requiredCount = 1;
+    }
+    logic(data) {
+        let daysOpen = data.open[0];
+        let daysClose = data.close[0];
+        let daysHigh = data.high[0];
+        let daysLow = data.low[0];
+        let isBullishHammer = daysClose > daysOpen;
+        isBullishHammer = isBullishHammer && this.approximateEqual(daysClose, daysHigh);
+        isBullishHammer = isBullishHammer && (daysClose - daysOpen) <= 2 * (daysOpen - daysLow);
+        return isBullishHammer;
+    }
+}
+function bullishhammerstick(data) {
+    return new BullishHammerStick().hasPattern(data);
+}
+
+class BullishInvertedHammerStick extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'BullishInvertedHammerStick';
+        this.requiredCount = 1;
+    }
+    logic(data) {
+        let daysOpen = data.open[0];
+        let daysClose = data.close[0];
+        let daysHigh = data.high[0];
+        let daysLow = data.low[0];
+        let isBullishInvertedHammer = daysClose > daysOpen;
+        isBullishInvertedHammer = isBullishInvertedHammer && this.approximateEqual(daysOpen, daysLow);
+        isBullishInvertedHammer = isBullishInvertedHammer && (daysClose - daysOpen) <= 2 * (daysHigh - daysClose);
+        return isBullishInvertedHammer;
+    }
+}
+function bullishinvertedhammerstick(data) {
+    return new BullishInvertedHammerStick().hasPattern(data);
+}
+
+class BearishHammerStick extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'BearishHammerStick';
+        this.requiredCount = 1;
+    }
+    logic(data) {
+        let daysOpen = data.open[0];
+        let daysClose = data.close[0];
+        let daysHigh = data.high[0];
+        let daysLow = data.low[0];
+        let isBearishHammer = daysOpen > daysClose;
+        isBearishHammer = isBearishHammer && this.approximateEqual(daysOpen, daysHigh);
+        isBearishHammer = isBearishHammer && (daysOpen - daysClose) <= 2 * (daysClose - daysLow);
+        return isBearishHammer;
+    }
+}
+function bearishhammerstick(data) {
+    return new BearishHammerStick().hasPattern(data);
+}
+
+class BearishInvertedHammerStick extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'BearishInvertedHammerStick';
+        this.requiredCount = 1;
+    }
+    logic(data) {
+        let daysOpen = data.open[0];
+        let daysClose = data.close[0];
+        let daysHigh = data.high[0];
+        let daysLow = data.low[0];
+        let isBearishInvertedHammer = daysOpen > daysClose;
+        isBearishInvertedHammer = isBearishInvertedHammer && this.approximateEqual(daysClose, daysLow);
+        isBearishInvertedHammer = isBearishInvertedHammer && (daysOpen - daysClose) <= 2 * (daysHigh - daysOpen);
+        return isBearishInvertedHammer;
+    }
+}
+function bearishinvertedhammerstick(data) {
+    return new BearishInvertedHammerStick().hasPattern(data);
+}
+
+class HammerPattern extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'HammerPattern';
+        this.requiredCount = 5;
+    }
+    logic(data) {
+        let isPattern = this.downwardTrend(data);
+        isPattern = isPattern && this.includesHammer(data);
+        isPattern = isPattern && this.hasConfirmation(data);
+        return isPattern;
+    }
+    downwardTrend(data, confirm = true) {
+        let end = confirm ? 3 : 4;
+        // Analyze trends in closing prices of the first three or four candlesticks
+        let gains = averagegain({ values: data.close.slice(0, end), period: end - 1 });
+        let losses = averageloss({ values: data.close.slice(0, end), period: end - 1 });
+        // Downward trend, so more losses than gains
+        return losses > gains;
+    }
+    includesHammer(data, confirm = true) {
+        let start = confirm ? 3 : 4;
+        let end = confirm ? 4 : undefined;
+        let possibleHammerData = {
+            open: data.open.slice(start, end),
+            close: data.close.slice(start, end),
+            low: data.low.slice(start, end),
+            high: data.high.slice(start, end),
+        };
+        let isPattern = bearishhammerstick(possibleHammerData);
+        isPattern = isPattern || bearishinvertedhammerstick(possibleHammerData);
+        isPattern = isPattern || bullishhammerstick(possibleHammerData);
+        isPattern = isPattern || bullishinvertedhammerstick(possibleHammerData);
+        return isPattern;
+    }
+    hasConfirmation(data) {
+        let possibleHammer = {
+            open: data.open[3],
+            close: data.close[3],
+            low: data.low[3],
+            high: data.high[3],
+        };
+        let possibleConfirmation = {
+            open: data.open[4],
+            close: data.close[4],
+            low: data.low[4],
+            high: data.high[4],
+        };
+        // Confirmation candlestick is bullish
+        let isPattern = possibleConfirmation.open < possibleConfirmation.close;
+        return isPattern && possibleHammer.close < possibleConfirmation.close;
+    }
+}
+function hammerpattern(data) {
+    return new HammerPattern().hasPattern(data);
+}
+
+class HammerPatternUnconfirmed extends HammerPattern {
+    constructor() {
+        super();
+        this.name = 'HammerPatternUnconfirmed';
+    }
+    logic(data) {
+        let isPattern = this.downwardTrend(data, false);
+        isPattern = isPattern && this.includesHammer(data, false);
+        return isPattern;
+    }
+}
+function hammerpatternunconfirmed(data) {
+    return new HammerPatternUnconfirmed().hasPattern(data);
+}
+
+class TweezerBottom extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'TweezerBottom';
+        this.requiredCount = 5;
+    }
+    logic(data) {
+        return this.downwardTrend(data) && data.low[3] == data.low[4];
+    }
+    downwardTrend(data) {
+        // Analyze trends in closing prices of the first three or four candlesticks
+        let gains = averagegain({ values: data.close.slice(0, 3), period: 2 });
+        let losses = averageloss({ values: data.close.slice(0, 3), period: 2 });
+        // Downward trend, so more losses than gains
+        return losses > gains;
+    }
+}
+function tweezerbottom(data) {
+    return new TweezerBottom().hasPattern(data);
+}
+
+let bullishPatterns = [
+    new BullishEngulfingPattern(),
+    new DownsideTasukiGap(),
+    new BullishHarami(),
+    new BullishHaramiCross(),
+    new MorningDojiStar(),
+    new MorningStar(),
+    new BullishMarubozu(),
+    new PiercingLine(),
+    new ThreeWhiteSoldiers(),
+    new BullishHammerStick(),
+    new BullishInvertedHammerStick(),
+    new HammerPattern(),
+    new HammerPatternUnconfirmed(),
+    new TweezerBottom()
+];
 class BullishPatterns extends CandlestickFinder {
     constructor() {
         super();
@@ -3282,8 +3469,183 @@ function threeblackcrows(data) {
     return new ThreeBlackCrows().hasPattern(data);
 }
 
-let bearishPatterns = [new BearishEngulfingPattern(), new BearishHarami(), new BearishHaramiCross(), new EveningDojiStar(),
-    new EveningStar(), new BearishMarubozu(), new ThreeBlackCrows()];
+class HangingMan extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'HangingMan';
+        this.requiredCount = 5;
+    }
+    logic(data) {
+        let isPattern = this.upwardTrend(data);
+        isPattern = isPattern && this.includesHammer(data);
+        isPattern = isPattern && this.hasConfirmation(data);
+        return isPattern;
+    }
+    upwardTrend(data, confirm = true) {
+        let end = confirm ? 3 : 4;
+        // Analyze trends in closing prices of the first three or four candlesticks
+        let gains = averagegain({ values: data.close.slice(0, end), period: end - 1 });
+        let losses = averageloss({ values: data.close.slice(0, end), period: end - 1 });
+        // Upward trend, so more gains than losses
+        return gains > losses;
+    }
+    includesHammer(data, confirm = true) {
+        let start = confirm ? 3 : 4;
+        let end = confirm ? 4 : undefined;
+        let possibleHammerData = {
+            open: data.open.slice(start, end),
+            close: data.close.slice(start, end),
+            low: data.low.slice(start, end),
+            high: data.high.slice(start, end),
+        };
+        let isPattern = bearishhammerstick(possibleHammerData);
+        isPattern = isPattern || bullishhammerstick(possibleHammerData);
+        return isPattern;
+    }
+    hasConfirmation(data) {
+        let possibleHammer = {
+            open: data.open[3],
+            close: data.close[3],
+            low: data.low[3],
+            high: data.high[3],
+        };
+        let possibleConfirmation = {
+            open: data.open[4],
+            close: data.close[4],
+            low: data.low[4],
+            high: data.high[4],
+        };
+        // Confirmation candlestick is bearish
+        let isPattern = possibleConfirmation.open > possibleConfirmation.close;
+        return isPattern && possibleHammer.close > possibleConfirmation.close;
+    }
+}
+function hangingman(data) {
+    return new HangingMan().hasPattern(data);
+}
+
+class HangingManUnconfirmed extends HangingMan {
+    constructor() {
+        super();
+        this.name = 'HangingManUnconfirmed';
+    }
+    logic(data) {
+        let isPattern = this.upwardTrend(data, false);
+        isPattern = isPattern && this.includesHammer(data, false);
+        return isPattern;
+    }
+}
+function hangingmanunconfirmed(data) {
+    return new HangingManUnconfirmed().hasPattern(data);
+}
+
+class ShootingStar extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'ShootingStar';
+        this.requiredCount = 5;
+    }
+    logic(data) {
+        let isPattern = this.upwardTrend(data);
+        isPattern = isPattern && this.includesHammer(data);
+        isPattern = isPattern && this.hasConfirmation(data);
+        return isPattern;
+    }
+    upwardTrend(data, confirm = true) {
+        let end = confirm ? 3 : 4;
+        // Analyze trends in closing prices of the first three or four candlesticks
+        let gains = averagegain({ values: data.close.slice(0, end), period: end - 1 });
+        let losses = averageloss({ values: data.close.slice(0, end), period: end - 1 });
+        // Upward trend, so more gains than losses
+        return gains > losses;
+    }
+    includesHammer(data, confirm = true) {
+        let start = confirm ? 3 : 4;
+        let end = confirm ? 4 : undefined;
+        let possibleHammerData = {
+            open: data.open.slice(start, end),
+            close: data.close.slice(start, end),
+            low: data.low.slice(start, end),
+            high: data.high.slice(start, end),
+        };
+        let isPattern = bearishinvertedhammerstick(possibleHammerData);
+        isPattern = isPattern || bullishinvertedhammerstick(possibleHammerData);
+        return isPattern;
+    }
+    hasConfirmation(data) {
+        let possibleHammer = {
+            open: data.open[3],
+            close: data.close[3],
+            low: data.low[3],
+            high: data.high[3],
+        };
+        let possibleConfirmation = {
+            open: data.open[4],
+            close: data.close[4],
+            low: data.low[4],
+            high: data.high[4],
+        };
+        // Confirmation candlestick is bearish
+        let isPattern = possibleConfirmation.open > possibleConfirmation.close;
+        return isPattern && possibleHammer.close > possibleConfirmation.close;
+    }
+}
+function shootingstar(data) {
+    return new ShootingStar().hasPattern(data);
+}
+
+class ShootingStarUnconfirmed extends ShootingStar {
+    constructor() {
+        super();
+        this.name = 'ShootingStarUnconfirmed';
+    }
+    logic(data) {
+        let isPattern = this.upwardTrend(data, false);
+        isPattern = isPattern && this.includesHammer(data, false);
+        return isPattern;
+    }
+}
+function shootingstarunconfirmed(data) {
+    return new ShootingStarUnconfirmed().hasPattern(data);
+}
+
+class TweezerTop extends CandlestickFinder {
+    constructor() {
+        super();
+        this.name = 'TweezerTop';
+        this.requiredCount = 5;
+    }
+    logic(data) {
+        return this.upwardTrend(data) && data.high[3] == data.high[4];
+    }
+    upwardTrend(data) {
+        // Analyze trends in closing prices of the first three or four candlesticks
+        let gains = averagegain({ values: data.close.slice(0, 3), period: 2 });
+        let losses = averageloss({ values: data.close.slice(0, 3), period: 2 });
+        // Upward trend, so more gains than losses
+        return gains > losses;
+    }
+}
+function tweezertop(data) {
+    return new TweezerTop().hasPattern(data);
+}
+
+let bearishPatterns = [
+    new BearishEngulfingPattern(),
+    new BearishHarami(),
+    new BearishHaramiCross(),
+    new EveningDojiStar(),
+    new EveningStar(),
+    new BearishMarubozu(),
+    new ThreeBlackCrows(),
+    new BearishHammerStick(),
+    new BearishInvertedHammerStick(),
+    new HangingMan(),
+    new HangingManUnconfirmed(),
+    new ShootingStar(),
+    new ShootingStarUnconfirmed(),
+    new TweezerTop()
+];
 class BearishPatterns extends CandlestickFinder {
     constructor() {
         super();
@@ -3490,26 +3852,24 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// import * as tf from '@tensorflow/tfjs';
 var isNodeEnvironment = false;
+var model;
+var oneHotMap = ['IHS', 'TU', 'DB', 'HS', 'TD', 'DT'];
+var tf;
 try {
     isNodeEnvironment = Object.prototype.toString.call(global.process) === '[object process]';
 }
 catch (e) { }
-var modelPath = getConfig('MODEL_PATH') || '/dist/model.bin';
-var model = new KerasJS.Model({
-    filepath: isNodeEnvironment ? __dirname + '/model.bin' : modelPath,
-    gpu: false,
-    filesystem: isNodeEnvironment
-});
 
 
 (function (AvailablePatterns) {
-    AvailablePatterns[AvailablePatterns["TD"] = 0] = "TD";
-    AvailablePatterns[AvailablePatterns["IHS"] = 1] = "IHS";
-    AvailablePatterns[AvailablePatterns["HS"] = 2] = "HS";
-    AvailablePatterns[AvailablePatterns["TU"] = 3] = "TU";
-    AvailablePatterns[AvailablePatterns["DT"] = 4] = "DT";
-    AvailablePatterns[AvailablePatterns["DB"] = 5] = "DB";
+    AvailablePatterns[AvailablePatterns["IHS"] = 0] = "IHS";
+    AvailablePatterns[AvailablePatterns["TU"] = 1] = "TU";
+    AvailablePatterns[AvailablePatterns["DB"] = 2] = "DB";
+    AvailablePatterns[AvailablePatterns["HS"] = 3] = "HS";
+    AvailablePatterns[AvailablePatterns["TD"] = 4] = "TD";
+    AvailablePatterns[AvailablePatterns["DT"] = 5] = "DT";
 })(exports.AvailablePatterns || (exports.AvailablePatterns = {}));
 function interpolateArray(data, fitCount) {
     var linearInterpolate = function (before, after, atPoint) {
@@ -3535,61 +3895,102 @@ function l2Normalize(arr) {
     return arr.map((v) => v / norm);
 }
 
+var modelLoaded = false;
+var laodingModel = false;
+var loadingPromise;
+function loadModel() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (modelLoaded)
+            return Promise.resolve(true);
+        if (laodingModel)
+            return loadingPromise;
+        laodingModel = true;
+        loadingPromise = new Promise(function (resolve, reject) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (isNodeEnvironment) {
+                    tf = require('@tensorflow/tfjs');
+                    console.log('Nodejs Environment detected ');
+                    var tfnode = require('@tensorflow/tfjs-node');
+                    var modelPath = require('path').resolve(__dirname, '../tf_model/model.json');
+                    model = yield tf.loadModel(tfnode.io.fileSystem(modelPath));
+                }
+                else {
+                    if (typeof window.tf == "undefined") {
+                        modelLoaded = false;
+                        laodingModel = false;
+                        console.log('Tensorflow js not imported, pattern detection may not work');
+                        resolve();
+                        return;
+                    }
+                    tf = window.tf;
+                    console.log('Browser Environment detected ', tf);
+                    console.log('Loading model ....');
+                    model = yield tf.loadModel('/tf_model/model.json');
+                    modelLoaded = true;
+                    laodingModel = false;
+                    setTimeout(resolve, 1000);
+                    console.log('Loaded model');
+                    return;
+                }
+                modelLoaded = true;
+                laodingModel = false;
+                resolve();
+                return;
+            });
+        });
+        yield loadingPromise;
+        return;
+    });
+}
+loadModel();
 function predictPattern(input) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (input.values.length < 200) {
-            console.warn('Pattern detector requires atleast 250 data for a reliable prediction, received just ', input.values.length);
+        yield loadModel();
+        if (input.values.length < 300) {
+            console.warn('Pattern detector requires atleast 300 data points for a reliable prediction, received just ', input.values.length);
         }
-        yield model.ready();
         Indicator.reverseInputs(input);
-        var data = input.values;
-        var closes = l2Normalize(interpolateArray(data, 400));
-        let result = yield model.predict({
-            input: new Float32Array(closes)
-        });
-        var index = result.output.indexOf(Math.max(...result.output));
+        var values = input.values;
+        var output = yield model.predict(tf.tensor2d([l2Normalize(interpolateArray(values, 400))]));
+        var index = tf.argMax(output, 1).get(0);
         Indicator.reverseInputs(input);
-        return {
-            pattern: exports.AvailablePatterns[index],
-            patternId: index,
-            probability: result.output[index] * 100
-        };
+        return { patternId: index, pattern: oneHotMap[index], probability: output.get(0, 4) * 100 };
     });
 }
 function hasDoubleBottom(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.DB && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.DB);
     });
 }
 function hasDoubleTop(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.DT && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.DT);
     });
 }
 function hasHeadAndShoulder(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.HS && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.HS);
     });
 }
 function hasInverseHeadAndShoulder(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.IHS && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.IHS);
     });
 }
 function isTrendingUp(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.TU && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.TU);
     });
 }
 function isTrendingDown(input) {
     return __awaiter(this, void 0, void 0, function* () {
         var result = yield predictPattern(input);
-        return (result.patternId === exports.AvailablePatterns.TD && result.probability > 75);
+        return (result.patternId === exports.AvailablePatterns.TD);
     });
 }
 class PatternDetector extends Indicator {
@@ -3601,6 +4002,231 @@ PatternDetector.hasHeadAndShoulder = hasHeadAndShoulder;
 PatternDetector.hasInverseHeadAndShoulder = hasInverseHeadAndShoulder;
 PatternDetector.isTrendingUp = isTrendingUp;
 PatternDetector.isTrendingDown = isTrendingDown;
+
+class IchimokuCloud extends Indicator {
+    constructor(input) {
+        super(input);
+        this.result = [];
+        var defaults = {
+            conversionPeriod: 9,
+            basePeriod: 26,
+            spanPeriod: 52,
+            displacement: 26
+        };
+        var params = Object.assign({}, defaults, input);
+        var currentConversionData = new FixedSizeLinkedList(params.conversionPeriod * 2, true, true, false);
+        var currentBaseData = new FixedSizeLinkedList(params.basePeriod * 2, true, true, false);
+        var currenSpanData = new FixedSizeLinkedList(params.spanPeriod * 2, true, true, false);
+        this.generator = (function* () {
+            let result;
+            let tick;
+            let period = Math.max(params.conversionPeriod, params.basePeriod, params.spanPeriod, params.displacement);
+            let periodCounter = 1;
+            tick = yield;
+            while (true) {
+                // Keep a list of lows/highs for the max period
+                currentConversionData.push(tick.high);
+                currentConversionData.push(tick.low);
+                currentBaseData.push(tick.high);
+                currentBaseData.push(tick.low);
+                currenSpanData.push(tick.high);
+                currenSpanData.push(tick.low);
+                if (periodCounter < period) {
+                    periodCounter++;
+                }
+                else {
+                    // Tenkan-sen (ConversionLine): (9-period high + 9-period low)/2))
+                    let conversionLine = (currentConversionData.periodHigh + currentConversionData.periodLow) / 2;
+                    // Kijun-sen (Base Line): (26-period high + 26-period low)/2))
+                    let baseLine = (currentBaseData.periodHigh + currentBaseData.periodLow) / 2;
+                    // Senkou Span A (Leading Span A): (Conversion Line + Base Line)/2))
+                    let spanA = (conversionLine + baseLine) / 2;
+                    // Senkou Span B (Leading Span B): (52-period high + 52-period low)/2))
+                    let spanB = (currenSpanData.periodHigh + currenSpanData.periodLow) / 2;
+                    // Senkou Span A / Senkou Span B offset by 26 periods
+                    // if(spanCounter < params.displacement) {
+                    // 	spanCounter++
+                    // } else {
+                    // 	spanA = spanAs.shift()
+                    // 	spanB = spanBs.shift()
+                    // }
+                    result = {
+                        conversion: conversionLine,
+                        base: baseLine,
+                        spanA: spanA,
+                        spanB: spanB
+                    };
+                }
+                tick = yield result;
+            }
+        })();
+        this.generator.next();
+        input.low.forEach((tick, index) => {
+            var result = this.generator.next({
+                high: input.high[index],
+                low: input.low[index],
+            });
+            if (result.value) {
+                this.result.push(result.value);
+            }
+        });
+    }
+    nextValue(price) {
+        return this.generator.next(price).value;
+    }
+}
+IchimokuCloud.calculate = ichimokucloud;
+function ichimokucloud(input) {
+    Indicator.reverseInputs(input);
+    var result = new IchimokuCloud(input).result;
+    if (input.reversedInput) {
+        result.reverse();
+    }
+    Indicator.reverseInputs(input);
+    return result;
+}
+
+class KeltnerChannelsInput extends IndicatorInput {
+    constructor() {
+        super(...arguments);
+        this.maPeriod = 20;
+        this.atrPeriod = 10;
+        this.useSMA = false;
+        this.multiplier = 1;
+    }
+}
+class KeltnerChannelsOutput extends IndicatorInput {
+}
+
+class KeltnerChannels extends Indicator {
+    constructor(input) {
+        super(input);
+        var maType = input.useSMA ? SMA : EMA;
+        var maProducer = new maType({ period: input.maPeriod, values: [], format: (v) => { return v; } });
+        var atrProducer = new ATR({ period: input.atrPeriod, high: [], low: [], close: [], format: (v) => { return v; } });
+        var tick;
+        this.result = [];
+        this.generator = (function* () {
+            var KeltnerChannelsOutput;
+            var result;
+            tick = yield;
+            while (true) {
+                var { close } = tick;
+                var ma = maProducer.nextValue(close);
+                var atr$$1 = atrProducer.nextValue(tick);
+                if (ma != undefined && atr$$1 != undefined) {
+                    result = {
+                        middle: ma,
+                        upper: ma + (input.multiplier * (atr$$1)),
+                        lower: ma - (input.multiplier * (atr$$1))
+                    };
+                }
+                tick = yield result;
+            }
+        })();
+        this.generator.next();
+        var highs = input.high;
+        highs.forEach((tickHigh, index) => {
+            var tickInput = {
+                high: tickHigh,
+                low: input.low[index],
+                close: input.close[index],
+            };
+            var result = this.generator.next(tickInput);
+            if (result.value != undefined) {
+                this.result.push(result.value);
+            }
+        });
+    }
+    ;
+    nextValue(price) {
+        var result = this.generator.next(price);
+        if (result.value != undefined) {
+            return result.value;
+        }
+    }
+    ;
+}
+KeltnerChannels.calculate = keltnerchannels;
+function keltnerchannels(input) {
+    Indicator.reverseInputs(input);
+    var result = new KeltnerChannels(input).result;
+    if (input.reversedInput) {
+        result.reverse();
+    }
+    Indicator.reverseInputs(input);
+    return result;
+}
+
+class ChandelierExitInput extends IndicatorInput {
+    constructor() {
+        super(...arguments);
+        this.period = 22;
+        this.multiplier = 3;
+    }
+}
+class ChandelierExitOutput extends IndicatorInput {
+}
+
+class ChandelierExit extends Indicator {
+    constructor(input) {
+        super(input);
+        var highs = input.high;
+        var lows = input.low;
+        var closes = input.close;
+        this.result = [];
+        var atrProducer = new ATR({ period: input.period, high: [], low: [], close: [], format: (v) => { return v; } });
+        var dataCollector = new FixedSizeLinkedList(input.period * 2, true, true, false);
+        this.generator = (function* () {
+            var result;
+            var tick = yield;
+            var atr$$1;
+            while (true) {
+                var { high, low } = tick;
+                dataCollector.push(high);
+                dataCollector.push(low);
+                atr$$1 = atrProducer.nextValue(tick);
+                if ((dataCollector.totalPushed >= (2 * input.period)) && atr$$1 != undefined) {
+                    result = {
+                        exitLong: dataCollector.periodHigh - atr$$1 * input.multiplier,
+                        exitShort: dataCollector.periodLow + atr$$1 * input.multiplier
+                    };
+                }
+                tick = yield result;
+            }
+        })();
+        this.generator.next();
+        highs.forEach((tickHigh, index) => {
+            var tickInput = {
+                high: tickHigh,
+                low: lows[index],
+                close: closes[index],
+            };
+            var result = this.generator.next(tickInput);
+            if (result.value != undefined) {
+                this.result.push(result.value);
+            }
+        });
+    }
+    ;
+    nextValue(price) {
+        var result = this.generator.next(price);
+        if (result.value != undefined) {
+            return result.value;
+        }
+    }
+    ;
+}
+ChandelierExit.calculate = chandelierexit;
+function chandelierexit(input) {
+    Indicator.reverseInputs(input);
+    var result = new ChandelierExit(input).result;
+    if (input.reversedInput) {
+        result.reverse();
+    }
+    Indicator.reverseInputs(input);
+    return result;
+}
 
 function getAvailableIndicators () {
   let AvailableIndicators   = [];
@@ -3666,6 +4292,18 @@ function getAvailableIndicators () {
   AvailableIndicators.push('bearishspinningtop');
   AvailableIndicators.push('threeblackcrows');
   AvailableIndicators.push('threewhitesoldiers');
+  AvailableIndicators.push('bullishhammerstick');
+  AvailableIndicators.push('bearishhammerstick');
+  AvailableIndicators.push('bullishinvertedhammerstick');
+  AvailableIndicators.push('bearishinvertedhammerstick');
+  AvailableIndicators.push('hammerpattern');
+  AvailableIndicators.push('hammerpatternunconfirmed');
+  AvailableIndicators.push('hangingman');
+  AvailableIndicators.push('hangingmanunconfirmed');
+  AvailableIndicators.push('shootingstar');
+  AvailableIndicators.push('shootingstarunconfirmed');
+  AvailableIndicators.push('tweezertop');
+  AvailableIndicators.push('tweezerbottom');
 
   AvailableIndicators.push('predictPattern');
   AvailableIndicators.push('hasDoubleBottom');
@@ -3674,6 +4312,10 @@ function getAvailableIndicators () {
   AvailableIndicators.push('hasInverseHeadAndShoulder');
   AvailableIndicators.push('isTrendingUp');
   AvailableIndicators.push('isTrendingDown');
+  AvailableIndicators.push('ichimokucloud');
+  
+  AvailableIndicators.push('keltnerchannels');
+  AvailableIndicators.push('chandelierexit');
   return AvailableIndicators;
 }
 
@@ -3774,6 +4416,18 @@ exports.bullishspinningtop = bullishspinningtop;
 exports.bearishspinningtop = bearishspinningtop;
 exports.threeblackcrows = threeblackcrows;
 exports.threewhitesoldiers = threewhitesoldiers;
+exports.bullishhammerstick = bullishhammerstick;
+exports.bearishhammerstick = bearishhammerstick;
+exports.bullishinvertedhammerstick = bullishinvertedhammerstick;
+exports.bearishinvertedhammerstick = bearishinvertedhammerstick;
+exports.hammerpattern = hammerpattern;
+exports.hammerpatternunconfirmed = hammerpatternunconfirmed;
+exports.hangingman = hangingman;
+exports.hangingmanunconfirmed = hangingmanunconfirmed;
+exports.shootingstar = shootingstar;
+exports.shootingstarunconfirmed = shootingstarunconfirmed;
+exports.tweezertop = tweezertop;
+exports.tweezerbottom = tweezerbottom;
 exports.fibonacciretracement = fibonacciretracement;
 exports.predictPattern = predictPattern;
 exports.PatternDetector = PatternDetector;
@@ -3783,6 +4437,16 @@ exports.hasHeadAndShoulder = hasHeadAndShoulder;
 exports.hasInverseHeadAndShoulder = hasInverseHeadAndShoulder;
 exports.isTrendingUp = isTrendingUp;
 exports.isTrendingDown = isTrendingDown;
+exports.ichimokucloud = ichimokucloud;
+exports.IchimokuCloud = IchimokuCloud;
+exports.keltnerchannels = keltnerchannels;
+exports.KeltnerChannels = KeltnerChannels;
+exports.KeltnerChannelsInput = KeltnerChannelsInput;
+exports.KeltnerChannelsOutput = KeltnerChannelsOutput;
+exports.chandelierexit = chandelierexit;
+exports.ChandelierExit = ChandelierExit;
+exports.ChandelierExitInput = ChandelierExitInput;
+exports.ChandelierExitOutput = ChandelierExitOutput;
 exports.setConfig = setConfig;
 exports.getConfig = getConfig;
 //# sourceMappingURL=index.js.map

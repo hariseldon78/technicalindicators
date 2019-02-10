@@ -63,6 +63,18 @@ export function getAvailableIndicators () {
   AvailableIndicators.push('bearishspinningtop');
   AvailableIndicators.push('threeblackcrows');
   AvailableIndicators.push('threewhitesoldiers');
+  AvailableIndicators.push('bullishhammerstick');
+  AvailableIndicators.push('bearishhammerstick');
+  AvailableIndicators.push('bullishinvertedhammerstick');
+  AvailableIndicators.push('bearishinvertedhammerstick');
+  AvailableIndicators.push('hammerpattern');
+  AvailableIndicators.push('hammerpatternunconfirmed');
+  AvailableIndicators.push('hangingman');
+  AvailableIndicators.push('hangingmanunconfirmed');
+  AvailableIndicators.push('shootingstar');
+  AvailableIndicators.push('shootingstarunconfirmed');
+  AvailableIndicators.push('tweezertop');
+  AvailableIndicators.push('tweezerbottom');
 
   AvailableIndicators.push('predictPattern');
   AvailableIndicators.push('hasDoubleBottom');
@@ -71,6 +83,10 @@ export function getAvailableIndicators () {
   AvailableIndicators.push('hasInverseHeadAndShoulder');
   AvailableIndicators.push('isTrendingUp');
   AvailableIndicators.push('isTrendingDown');
+  AvailableIndicators.push('ichimokucloud');
+  
+  AvailableIndicators.push('keltnerchannels');
+  AvailableIndicators.push('chandelierexit');
   return AvailableIndicators;
 };
 

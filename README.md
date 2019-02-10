@@ -2,12 +2,12 @@
 
 # TechnicalIndicators
 
-A javascript technical indicators written in javascript.
+A javascript technical indicators written in typescript.
 
 
 # Installation
 
-## Node.js versions >= 6.4
+## Node.js versions >= 10
 
 ``` bash
 npm install --save technicalindicators
@@ -17,17 +17,9 @@ npm install --save technicalindicators
 const SMA = require('technicalindicators').SMA;
 ```
 
-## Node.js versions < 6.4
+## Node.js versions < 10
 
-``` bash
-npm install --save babel-polyfill
-npm install --save technicalindicators
-```
-
-``` javascript
-require('babel-polyfill');
-const SMA = require('technicalindicators/dist/browser').SMA;
-```
+For nodejs version below 10 use 1.x versions of this library.
 
 ## Webpack
 
@@ -44,17 +36,47 @@ module.exports = {
 
 ## Browser
 
-For browser install using bower or npm, but it is necessary to include the babel-polyfill otherwise you will get an error. For example see [index.html](https://github.com/anandanand84/technicalindicators/blob/master/index.html "index.html")
+For browsers install using npm, 
+
+For ES6 browsers use
+
+``` bash
+npm install --save technicalindicators
+```
+
+```html
+<script src="node_modules/technicalindicators/dist/browser.es6.js"></script>
+```
+
+For ES5 support it is necessary to include the babel-polyfill and respective file browser.js otherwise you will get an error. For example see [index.html](https://github.com/anandanand84/technicalindicators/blob/master/index.html "index.html")
 
 ``` bash
 npm install --save technicalindicators
 npm install --save babel-polyfill
-bower install --save technicalindicators
 ```
 
 ``` html
 <script src="node_modules/babel-polyfill/browser.js"></script>
-<script src="bower_components/technicalindicators/browser.js"></script>
+<script src="node_modules/technicalindicators/dist/browser.js"></script>
+```
+
+### Pattern detection
+
+If using pattern detection it is necessary to include the tensorflowjs library before this library is loaded and the model files present in tf_model dir in this repository should be accessible at location /tf_model/ in server.
+
+For ES6
+
+``` html
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.0"></script>
+<script src="node_modules/technicalindicators/dist/browser.es6.js"></script>
+```
+
+For ES5
+
+``` html
+<script src="node_modules/babel-polyfill/browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.0"></script>
+<script src="node_modules/technicalindicators/dist/browser.es6.js"></script>
 ```
 
 All indicators will be available in window object. So you can just use
@@ -116,6 +138,7 @@ If you like this project. You'll love my other project [crypto trading hub](http
 1. [Weighted Moving Average (WMA)](https://tonicdev.com/anandaravindan/wma "WMA").
 1. [Wilder’s Smoothing (Smoothed Moving Average, WEMA)](https://tonicdev.com/anandaravindan/wema "WEMA").
 1. [WilliamsR (W%R)](https://tonicdev.com/anandaravindan/williamsr "W%R").
+1. [Ichimoku Cloud](https://github.com/anandanand84/technicalindicators/blob/master/test/ichimoku/IchimokuCloud.js "Ichimoku Cloud").
 
 # Other Utils
 
@@ -140,7 +163,7 @@ Finds pattern in the given set of data, patterns include, DB, DT, HS, IHS, TU, T
 ```
 
 
-When running in browser the file model.bin present in dist/model.bin in the respository should be accessible on your server at the location at /dist/model.bin.
+When running in browser the dir /tf_model/ present in this respository should be accessible on your server at the location at /tf_model/.
 The model is trained using 400 count of values, so try to provide values close to 400  for a reliable prediction of DB, DT, HS, IHS
 TD(Trending Down) and TU(Trending up) works fine even with lower values.
 
@@ -175,6 +198,18 @@ TD(Trending Down) and TU(Trending up) works fine even with lower values.
 1. [Morning Star](https://runkit.com/aarthiaradhana/morningstar).
 1. [Three Black Crows](https://runkit.com/aarthiaradhana/threeblackcrows).
 1. [Three White Soldiers](https://runkit.com/aarthiaradhana/threewhitesoldiers).
+1. [Bullish Hammer](https://runkit.com/nerdacus/technicalindicator-bullishhammer).
+1. [Bearish Hammer](https://runkit.com/nerdacus/technicalindicator-bearishhammer).
+1. [Bullish Inverted Hammer](https://runkit.com/nerdacus/technicalindicator-bullishinvertedhammer).
+1. [Bearish Inverted Hammer](https://runkit.com/nerdacus/technicalindicator-bearishinvertedhammer).
+1. [Hammer Pattern](https://runkit.com/nerdacus/technicalindicator-hammerpattern).
+1. [Hammer Pattern (Unconfirmed)](https://runkit.com/nerdacus/technicalindicator-hammerpatternunconfirmed).
+1. [Hanging Man](https://runkit.com/nerdacus/technicalindicator-hangingman).
+1. [Hanging Man (Unconfirmed)](https://runkit.com/nerdacus/technicalindicator-hangingmanunconfirmed).
+1. [Shooting Star](https://runkit.com/nerdacus/technicalindicator-shootingstar).
+1. [Shooting Star (Unconfirmed)](https://runkit.com/nerdacus/technicalindicator-shootingstarunconfirmed).
+1. [Tweezer Top](https://runkit.com/nerdacus/technicalindicator-tweezertop).
+1. [Tweezer Bottom](https://runkit.com/nerdacus/technicalindicator-tweezerbottom).
 
 or
 
@@ -296,14 +331,15 @@ npm test
 npm run cover
 ```
 
-## Adding new indicators.
+## Adding new indicators
 
-1. Add tests for the indicator. Make it pass. It would be better if a sample of the stockcharts excel is used for the test case.
-1. Add the indicator to the index.js
-1. Run `npm run build` so it adds the indicator to the browser.js
-1. Add it to read me, with the link to the tonicdev url containing the sample.
-1. Add indicator it to keywords in package.json and bower.json
-1. Send a pull request.
+1. Add tests for the indicator and make them pass.  
+   (It would be better if a sample of the stockcharts excel is used for the test case.)
+1. Add the indicator to the `index.js` and `src/index.ts`
+1. Run build scripts: `npm run build-lib && npm run generateDts && npm run start`
+1. Add it to `README.md`, with the link to the runkit url containing the sample.
+1. Add indicator it to keywords in `package.json` and `bower.json`
+1. Send a Pull Request.
 
 
 ## Verify Documentation
